@@ -1,0 +1,27 @@
+# Data
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.pkl
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# Vector Store (if large)
+# vector_store/
