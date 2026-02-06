@@ -4,11 +4,13 @@ An intelligent complaint analysis system using Retrieval-Augmented Generation (R
 
 ## 🎯 Features
 
-- **Evidence-Based Answers**: AI responses grounded in real customer complaint data
-- **Source Attribution**: Every answer includes traceable sources with complaint IDs
-- **Product Filtering**: Filter by financial product categories
-- **Modern UI**: Next.js + TypeScript + shadcn/ui for production-grade interface
-- **Type-Safe**: Full TypeScript coverage for API contracts and UI components
+- **Enterprise-Grade UI**: Polished, dashboard-style interface with Dark Mode support via `next-themes`.
+- **Evidence-Based Answers**: AI responses grounded in real customer complaint data.
+- **Structured Analysis**: Answers partitioned into **Executive Summaries (TL;DR)** and **Deep Context Analysis**.
+- **Source Traceability**: Every answer includes traceable sources with Case Reference IDs and metadata.
+- **Product Filtering**: Context-aware filtering by financial product categories.
+- **Smart UX**: Rotating example questions and "Initiate Analysis" workflows to guide users.
+- **Production-Ready**: Built with Next.js 16+, TypeScript, and TailwindCSS legacy-free architecture.
 
 ## 🏗️ Architecture
 

@@ -4,9 +4,10 @@ import { AnswerPanel } from '@/components/AnswerPanel';
 import { ChatInput } from '@/components/ChatInput';
 import { AnswerSkeleton } from '@/components/SkeletonLoader';
 import { SourceList } from '@/components/SourceList';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { askQuestion } from '@/lib/api';
 import { RAGResponse } from '@/lib/types';
-import { BarChart3, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, BarChart3, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Home() {
@@ -38,58 +39,58 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-50 via-slate-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-black">
-      {/* Header Decoration */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
-
-      <main className="container mx-auto px-4 py-12 max-w-4xl relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-12 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
-            <Sparkles className="h-3 w-3" />
-            AI-Powered RAG System
+    <div className="min-h-screen selection:bg-primary/20 bg-background transition-colors duration-300">
+      {/* Top Navigation / Actions */}
+      <nav className="fixed top-0 left-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/50 px-4">
+        <div className="container mx-auto h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
+              <Zap className="h-5 w-5 fill-current" />
+            </div>
+            <span className="font-bold text-xl tracking-tight hidden sm:inline-block">CrediTrust</span>
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-            CrediTrust Analysis
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 pt-32 pb-24 max-w-4xl relative z-10">
+        {/* Enterprise Hero Section */}
+        <section className="text-center mb-16 space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary text-foreground border border-border shadow-sm text-[13px] font-semibold tracking-wide animate-in fade-in slide-in-from-bottom-2 duration-700">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            Enterprise-Grade Complaint Analysis
+          </div>
+
+          <h1 className="text-6xl font-black tracking-tight text-foreground sm:text-7xl lg:text-8xl animate-in fade-in slide-in-from-bottom-3 duration-1000">
+            Turn complaints into <span className="text-primary">insights.</span>
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Grounded intelligence for financial customer complaints.
-            Providing high-fidelity answers backed by real source narratives.
+
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700">
+            Harness grounded RAG intelligence to analyze customer friction.
+            Instant, factual analysis backed by real-world evidence narratives.
           </p>
-        </div>
 
-        {/* Feature Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-xl border border-border/50 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
-              <ShieldCheck className="h-5 w-5" />
+          <div className="flex flex-wrap justify-center gap-6 pt-4 animate-in fade-in slide-in-from-bottom-5 duration-700">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Zero Hallucination
             </div>
-            <div>
-              <p className="font-semibold text-sm">Grounded</p>
-              <p className="text-xs text-muted-foreground">Zero halluciation guardrails</p>
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Target className="h-4 w-4 text-primary" />
+              Evidence Grounded
             </div>
-          </div>
-          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-xl border border-border/50 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-              <BarChart3 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Traceable</p>
-              <p className="text-xs text-muted-foreground">Citations for every answer</p>
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ArrowRight className="h-4 w-4 text-primary" />
+              Traceable Sources
             </div>
           </div>
-          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-xl border border-border/50 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-600">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Production</p>
-              <p className="text-xs text-muted-foreground">Next.js + LLM Backend</p>
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <div className="space-y-8">
+        {/* Input & Results Control Area */}
+        <div className="space-y-10">
           <ChatInput
             onSubmit={handleSubmit}
             onClear={clearChat}
@@ -97,27 +98,50 @@ export default function Home() {
           />
 
           {error && (
-            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl animate-in fade-in slide-in-from-top-2">
-              <p className="text-destructive font-medium text-sm">Error: {error}</p>
+            <div className="p-5 bg-destructive/5 border border-destructive/20 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+                  <ShieldCheck className="h-4 w-4 rotate-180" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-destructive">Engine Communication Failure</h4>
+                  <p className="text-destructive/80 text-xs mt-0.5">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
           {isLoading && (
-            <div className="animate-in fade-in duration-500">
+            <div className="animate-in fade-in duration-700">
               <AnswerSkeleton />
             </div>
           )}
 
           {response && !isLoading && (
-            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+              {/* Active Filter Badge if selected */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Active Insight Layer:</span>
+                <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                  {response.question.length > 30 ? "Focused Analysis" : "Global Context"}
+                </div>
+              </div>
+
               <AnswerPanel answer={response.answer} />
               <SourceList sources={response.sources} />
             </div>
           )}
         </div>
 
-        <footer className="mt-20 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© 2026 CrediTrust Analytics Engine. Built with Next.js, FastAPI, and ChromaDB.</p>
+        <footer className="mt-32 pt-12 border-t border-border/50 text-center space-y-4">
+          <div className="flex justify-center gap-6 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+            <BarChart3 className="h-6 w-6" />
+            <ShieldCheck className="h-6 w-6" />
+            <Zap className="h-6 w-6" />
+          </div>
+          <p className="text-[13px] text-muted-foreground font-medium uppercase tracking-[0.2em]">
+            CrediTrust Analytics Protocol v2.0
+          </p>
         </footer>
       </main>
     </div>
