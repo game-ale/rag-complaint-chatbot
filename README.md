@@ -8,10 +8,9 @@ CrediTrust is a production-grade **Retrieval-Augmented Generation (RAG)** system
 
 ## 🎥 Video Demo
 
-<video src="vedio/CrediTrust _ Enterprise RAG AI.mp4" controls="controls" style="max-width: 100%;">
-</video>
+[![Watch Demo](https://img.shields.io/badge/Watch_Demo-Google_Drive-blue?style=for-the-badge&logo=google-drive)](https://drive.google.com/file/d/1Pld8D-oA1_JxGuu6rdSPFmJrpV9Pbd2U/view?usp=sharing)
 
-*[Download Demo Video](vedio/CrediTrust%20_%20Enterprise%20RAG%20AI.mp4)*
+*(Click the badge above to watch the full demo)*
 
 ---
 
