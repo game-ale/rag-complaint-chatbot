@@ -169,12 +169,6 @@ Create `ui/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## 📝 Documentation
-
-- [Task 1 EDA Summary](task1_eda_summary.md)
-- [Task 2 Technical Report](task2_technical_report.md)
-- [Task 3 RAG Summary](task3_rag_summary.md)
-
 ## 🎨 UI Components
 
 All components are fully typed with TypeScript:
@@ -221,6 +215,3 @@ npm start
 
 MIT
 
-## 👤 Author
-
-Built as a portfolio project demonstrating production-grade RAG system development.
