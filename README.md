@@ -12,6 +12,20 @@ CrediTrust is a production-grade **Retrieval-Augmented Generation (RAG)** system
 
 *(Click the badge above to watch the full demo)*
 
+### 📸 Screenshots
+
+| **Dashboard** | **AI Response** |
+|:---:|:---:|
+| ![Dashboard](vedio/dashbord.png) | ![Response](vedio/response.png) |
+
+| **Analytics** | **History Archive** |
+|:---:|:---:|
+| ![Analytics](vedio/analaytics.png) | ![History](vedio/history.png) |
+
+| **System Core & Configuration** |
+|:---:|
+| ![Config](vedio/rag%20configration%20.png) |
+
 ---
 
 ## 🚀 Key Features
@@ -108,17 +122,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to access the platform.
-
----
-
-## 📦 Deployment
-
-### Zero-Cost Stack
-This project is designed to be deployed for **$0/month**:
-- **Frontend**: Deploy to Vercel (Free Tier).
-- **Backend**: Deploy to Render or Railway (Free/Trial Tier).
-- **Database**: Use Supabase or self-hosted ChromaDB on the backend instance.
-
 
 ---
 
