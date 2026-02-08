@@ -119,7 +119,6 @@ This project is designed to be deployed for **$0/month**:
 - **Backend**: Deploy to Render or Railway (Free/Trial Tier).
 - **Database**: Use Supabase or self-hosted ChromaDB on the backend instance.
 
-For a full deployment guide, see [deployment_tools.md](deployment_tools.md).
 
 ---
 
