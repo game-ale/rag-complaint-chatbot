@@ -1,217 +1,133 @@
-# CrediTrust Complaint Analysis - RAG Chatbot
+# CrediTrust: Enterprise RAG Analytics Platform
 
-An intelligent complaint analysis system using Retrieval-Augmented Generation (RAG) to answer questions about customer financial complaints with evidence-backed responses.
+**Turn customer complaints into actionable financial insights.**
 
-## 🎯 Features
+CrediTrust is a production-grade **Retrieval-Augmented Generation (RAG)** system that transforms raw financial narratives into grounded business intelligence. Built with a "Privacy-First" local AI architecture, it ensures every insight is traceable back to real-world evidence.
 
-- **Enterprise-Grade UI**: Polished, dashboard-style interface with Dark Mode support via `next-themes`.
-- **Evidence-Based Answers**: AI responses grounded in real customer complaint data.
-- **Structured Analysis**: Answers partitioned into **Executive Summaries (TL;DR)** and **Deep Context Analysis**.
-- **Source Traceability**: Every answer includes traceable sources with Case Reference IDs and metadata.
-- **Product Filtering**: Context-aware filtering by financial product categories.
-- **Smart UX**: Rotating example questions and "Initiate Analysis" workflows to guide users.
-- **Production-Ready**: Built with Next.js 16+, TypeScript, and TailwindCSS legacy-free architecture.
+---
+
+## 🎥 Video Demo
+
+<video src="vedio/CrediTrust _ Enterprise RAG AI.mp4" controls="controls" style="max-width: 100%;">
+</video>
+
+*[Download Demo Video](vedio/CrediTrust%20_%20Enterprise%20RAG%20AI.mp4)*
+
+---
+
+## 🚀 Key Features
+
+### 🏛️ Enterprise-Grade Dashboard
+- **Multi-Module Architecture**: Seamless navigation between AI Research, Market Analytics, and Historical Archives.
+- **Dark/Light Mode**: Fully responsive theming with persistent user preferences.
+- **Glassmorphism Design**: High-end UI with `framer-motion` animations and `geist-sans` typography.
+
+### 🧠 Grounded Intelligence (RAG)
+- **Zero Hallucination**: The system refuses to answer if it cannot find evidence in the vector database.
+- **Traceable Citations**: Every claim is backed by a "Source Card" with the original complaint text and Case ID.
+- **Structured Logic**: Answers are automatically partitioned into an **Executive Summary (TL;DR)** and **Deep Context Analysis**.
+
+### 📊 Market Analytics
+- **Interactive Visualizations**: Real-time charts powered by `Recharts` showing:
+    - Complaint Volume Trends (Area Chart)
+    - Product Category Distribution (Donut Chart)
+    - Friction Point Intensity (Bar Chart)
+
+### 🛡️ System Core
+- **Self-Hosted AI**: Runs entirely on local hardware using `FLAN-T5` and `ChromaDB`.
+- **Zero Cost**: Built 100% with open-source software—no OpenAI or API fees required.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Component | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | `Next.js 16` | React Framework (App Router + Turbopack) |
+| **Language** | `TypeScript` | Type-safe Codebase |
+| **Styling** | `TailwindCSS` | Utility-first Design System |
+| **UI Library** | `shadcn/ui` | Accessible Component Primitives |
+| **Backend** | `FastAPI` | High-performance Python API |
+| **Vector DB** | `ChromaDB` | Semantic Search Engine |
+| **LLM** | `FLAN-T5` | Local text generation model |
+| **Orchestration** | `Python 3.9+` | Data Pipeline & Embedding Logic |
+
+---
 
 ## 🏗️ Architecture
 
-### Backend
-- **FastAPI**: REST API serving the RAG pipeline
-- **ChromaDB**: Vector database for semantic search
-- **FLAN-T5**: Local LLM for answer generation
-- **Sentence Transformers**: all-MiniLM-L6-v2 for embeddings
+```mermaid
+graph TD
+    User[User] -->|Query| UI[Next.js Dashboard]
+    UI -->|API Request| API[FastAPI Backend]
+    
+    subgraph "Intelligence Core"
+    API -->|Embed Query| Encoder[Sentence Transformers]
+    Encoder -->|Vector Search| DB[(ChromaDB)]
+    DB -->|Retrieve Context| API
+    API -->|Prompt + Context| LLM[FLAN-T5 Model]
+    LLM -->|Grounded Answer| API
+    end
+    
+    API -->|JSON Response| UI
+```
 
-### Frontend
-- **Next.js 16**: React framework with App Router
-- **TypeScript**: Type-safe development
-- **TailwindCSS**: Utility-first styling
-- **shadcn/ui**: Accessible component library
+---
 
-## 🚀 Quick Start
+## ⚡ Getting Started
 
 ### Prerequisites
-- Python 3.8+
-- Node.js 18+
-- npm or yarn
+- **Node.js 18+**
+- **Python 3.9+**
 
-### Backend Setup
+### 1. Backend Setup
+The backend handles the AI logic and database connection.
 
-1. **Install Python dependencies**:
 ```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-2. **Run the embedding pipeline** (first time only):
-```bash
+# Create the Vector Index (Run once)
 python src/embedding_pipeline.py
-```
-This creates the vector store from the complaint data (~15k samples).
 
-3. **Start the API server**:
-```bash
+# Start the API
 uvicorn src.api:app --host 0.0.0.0 --port 8000
 ```
 
-The API will be available at `http://localhost:8000`
+### 2. Frontend Setup
+The frontend provides the interactive dashboard.
 
-### Frontend Setup
-
-1. **Navigate to UI directory**:
 ```bash
+# Navigate to UI
 cd ui
-```
 
-2. **Install dependencies**:
-```bash
+# Install dependencies
 npm install
-```
 
-3. **Start the development server**:
-```bash
+# Start Development Server
 npm run dev
 ```
 
-The UI will be available at `http://localhost:3000`
+Open [http://localhost:3000](http://localhost:3000) to access the platform.
 
-## 📡 API Documentation
+---
 
-### POST /ask
+## 📦 Deployment
 
-**Request**:
-```json
-{
-  "question": "What are the main issues with credit cards?",
-  "filters": {
-    "product": "Credit card"
-  }
-}
-```
+### Zero-Cost Stack
+This project is designed to be deployed for **$0/month**:
+- **Frontend**: Deploy to Vercel (Free Tier).
+- **Backend**: Deploy to Render or Railway (Free/Trial Tier).
+- **Database**: Use Supabase or self-hosted ChromaDB on the backend instance.
 
-**Response**:
-```json
-{
-  "question": "What are the main issues with credit cards?",
-  "answer": "Based on the complaints, the main issues include...",
-  "sources": [
-    {
-      "text": "Full complaint narrative...",
-      "product": "Credit card",
-      "company": "Citibank",
-      "complaint_id": "123456"
-    }
-  ]
-}
-```
+For a full deployment guide, see [deployment_tools.md](deployment_tools.md).
 
-## 📁 Project Structure
+---
 
-```
-rag-complaint-chatbot/
-├── src/
-│   ├── api.py                 # FastAPI backend
-│   ├── rag_pipeline.py        # RAG core logic
-│   └── embedding_pipeline.py  # Vector store creation
-├── ui/
-│   ├── app/
-│   │   └── page.tsx          # Main chat interface
-│   ├── components/
-│   │   ├── ChatInput.tsx     # Question input
-│   │   ├── AnswerPanel.tsx   # AI response display
-│   │   ├── SourceList.tsx    # Citations container
-│   │   └── SourceCard.tsx    # Individual source
-│   └── lib/
-│       ├── api.ts            # API client
-│       └── types.ts          # TypeScript definitions
-├── data/
-│   ├── raw/                  # Original complaint data
-│   └── processed/            # Cleaned datasets
-├── vector_store/             # ChromaDB persistence
-└── notebooks/                # EDA and evaluation
-```
+## � License
 
-## 🧪 Testing
+This project is open-source and available under the [MIT License](LICENSE).
 
-### Backend API Test
-```bash
-python scripts/test_api.py
-```
+---
 
-### Task 3 Verification
-```bash
-python scripts/verify_task3.py
-```
-
-## 📊 Data Pipeline
-
-1. **Task 1**: EDA & Preprocessing
-   - Filtered to 5 product categories
-   - Cleaned 454k+ complaints
-   - Removed empty narratives
-
-2. **Task 2**: Embedding & Indexing
-   - Stratified sampling (15k records)
-   - Chunking (500 chars, 50 overlap)
-   - Vector indexing with metadata
-
-3. **Task 3**: RAG Core Logic
-   - Retrieval from ChromaDB
-   - Prompt engineering for grounding
-   - FLAN-T5 generation
-
-4. **Task 4**: React UI
-   - Next.js TypeScript application
-   - Real-time API integration
-   - Source citation display
-
-## 🔒 Environment Variables
-
-Create `ui/.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-## 🎨 UI Components
-
-All components are fully typed with TypeScript:
-
-- **ChatInput**: Multi-line textarea with submit handling
-- **AnswerPanel**: Formatted AI response display
-- **SourceList**: Top 5 sources with metadata
-- **SourceCard**: Expandable complaint cards with badges
-
-## 🚦 Production Deployment
-
-### Backend
-```bash
-uvicorn src.api:app --host 0.0.0.0 --port 8000 --workers 4
-```
-
-### Frontend
-```bash
-cd ui
-npm run build
-npm start
-```
-
-## 📈 Performance
-
-- **Retrieval**: <50ms (15k sample)
-- **Generation**: ~20-25s (CPU, FLAN-T5-base)
-- **Total Latency**: ~25s per query
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend Framework | Next.js 16 |
-| Language | TypeScript |
-| Styling | TailwindCSS |
-| UI Components | shadcn/ui |
-| Backend API | FastAPI |
-| Vector DB | ChromaDB |
-| Embeddings | all-MiniLM-L6-v2 |
-| LLM | google/flan-t5-base |
-
-## 📄 License
-
-MIT
-
+*Verified Portfolio Project · 2026*
