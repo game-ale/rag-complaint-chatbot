@@ -125,8 +125,6 @@ Open [http://localhost:3000](http://localhost:3000) to access the platform.
 
 ---
 
----
-
 ## � License
 
 This project is open-source and available under the [MIT License](LICENSE).
