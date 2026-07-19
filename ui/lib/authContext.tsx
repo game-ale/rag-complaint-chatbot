@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem('token');
                 setToken(null);
                 setUser(null);
-                if (pathname !== '/login') {
+                if (pathname !== '/login' && pathname !== '/register') {
                     router.push('/login');
                 }
             })
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         } else {
             setIsLoading(false);
-            if (pathname !== '/login') {
+            if (pathname !== '/login' && pathname !== '/register') {
                 router.push('/login');
             }
         }

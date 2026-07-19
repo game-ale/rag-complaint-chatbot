@@ -128,6 +128,13 @@ export default function LoginPage() {
                             "Secure Login"
                         )}
                     </Button>
+                    
+                    <div className="text-center mt-6 text-xs text-muted-foreground font-medium">
+                        Don't have an account?{" "}
+                        <span onClick={() => router.push('/register')} className="text-primary font-bold hover:underline cursor-pointer">
+                            Register Here
+                        </span>
+                    </div>
                 </form>
             </Card>
         </div>

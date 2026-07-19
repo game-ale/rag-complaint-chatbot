@@ -29,6 +29,18 @@ class User(Base):
     hashed_password = Column(String)
     name = Column(String)
     role = Column(SQLEnum(RoleEnum), default=RoleEnum.user)
+    created_at = Column(String, default=lambda: __import__('datetime').datetime.utcnow().isoformat())
+
+class QueryHistory(Base):
+    __tablename__ = "query_history"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    question = Column(String)
+    answer = Column(String)
+    sources_json = Column(String) # Stored as JSON string
+    product_filter = Column(String, nullable=True)
+    response_time = Column(String)
+    created_at = Column(String, default=lambda: __import__('datetime').datetime.utcnow().isoformat())
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)

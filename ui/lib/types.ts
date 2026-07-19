@@ -32,6 +32,7 @@ export interface ChatMessage {
   timestamp: number;
   feedback?: 'up' | 'down';
   responseTime?: number;
+  isStreaming?: boolean;
 }
 
 // --- Dashboard Types ---

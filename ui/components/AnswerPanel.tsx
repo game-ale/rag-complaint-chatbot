@@ -11,31 +11,11 @@ interface AnswerPanelProps {
     sourceCount?: number;
     onFeedback?: (type: 'up' | 'down') => void;
     currentFeedback?: 'up' | 'down';
+    isStreaming?: boolean;
 }
 
-export function AnswerPanel({ answer, responseTime = 2.1, sourceCount = 0, onFeedback, currentFeedback }: AnswerPanelProps) {
+export function AnswerPanel({ answer, responseTime = 2.1, sourceCount = 0, onFeedback, currentFeedback, isStreaming = false }: AnswerPanelProps) {
     const [copied, setCopied] = useState(false);
-    const [displayedAnswer, setDisplayedAnswer] = useState("");
-    const [isStreaming, setIsStreaming] = useState(true);
-
-    useEffect(() => {
-        setIsStreaming(true);
-        setDisplayedAnswer("");
-        let currentIndex = 0;
-        
-        const interval = setInterval(() => {
-            if (currentIndex <= answer.length) {
-                setDisplayedAnswer(answer.slice(0, currentIndex));
-                currentIndex += 3; // Stream 3 chars at a time for speed
-            } else {
-                setDisplayedAnswer(answer);
-                setIsStreaming(false);
-                clearInterval(interval);
-            }
-        }, 10); // Very fast interval
-
-        return () => clearInterval(interval);
-    }, [answer]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(answer);
@@ -44,7 +24,7 @@ export function AnswerPanel({ answer, responseTime = 2.1, sourceCount = 0, onFee
     };
 
     // Basic logic to partition answer if it has bullets or structure
-    const sections = displayedAnswer.split('\n\n');
+    const sections = answer.split('\n\n');
     const summary = sections.find(s => s.toLowerCase().includes('summary') || s.includes('-') || s.includes(':')) || sections[0];
     const analysis = sections.length > 1 ? sections.slice(1).join('\n\n') : '';
 

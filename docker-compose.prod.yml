@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: creditrust
+      POSTGRES_PASSWORD: supersecret_production_password
+      POSTGRES_DB: creditrust
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U creditrust"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=postgresql://creditrust:supersecret_production_password@db:5432/creditrust
+      - JWT_SECRET_KEY=generate_a_secure_key_for_production_use
+    volumes:
+      - ./data:/app/data
+      - ./vector_store:/app/vector_store
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile.frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://your-domain.com # Update to your production domain or IP
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data_prod:

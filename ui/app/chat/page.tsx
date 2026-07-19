@@ -10,7 +10,11 @@ import { ChatMessage } from '@/lib/types';
 import { ArrowRight, ShieldCheck, Sparkles, Target } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '@/lib/authContext';
+import { API_URL } from '@/lib/api';
+
 export default function ChatPage() {
+  const { token } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,27 +54,72 @@ export default function ChatPage() {
     setIsLoading(true);
     setError(null);
 
-    // Create a temporary message id
     const tempId = Date.now().toString();
+    
+    // Add empty message for streaming
+    setMessages(prev => [...prev, {
+      id: tempId,
+      question,
+      answer: "",
+      sources: [],
+      product,
+      timestamp: Date.now(),
+      responseTime: 0,
+      isStreaming: true
+    }]);
 
     try {
-      const result = await askQuestion({
-        question,
-        filters: product ? { product } : undefined
-      });
+      const wsUrl = API_URL.replace('http', 'ws') + '/ws/ask';
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        setIsLoading(false); // Stop main loading spinner, start streaming
+        ws.send(JSON.stringify({
+          token: token,
+          question: question,
+          filters: product ? { product } : undefined
+        }));
+      };
 
-      setMessages(prev => [...prev, {
-        id: tempId,
-        question,
-        answer: result.answer,
-        sources: result.sources,
-        product,
-        timestamp: Date.now(),
-        responseTime: result.response_time || 2.1
-      }]);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'token') {
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === tempId) {
+              return { ...msg, answer: msg.answer + data.content };
+            }
+            return msg;
+          }));
+        } else if (data.type === 'sources') {
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === tempId) {
+              return { ...msg, sources: data.content };
+            }
+            return msg;
+          }));
+        } else if (data.type === 'done') {
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === tempId) {
+              return { ...msg, isStreaming: false, responseTime: data.response_time };
+            }
+            return msg;
+          }));
+          ws.close();
+        } else if (data.type === 'error') {
+          setError(data.message);
+          ws.close();
+        }
+      };
+
+      ws.onerror = (error) => {
+        setError("WebSocket connection error. Please try again.");
+        setIsLoading(false);
+        setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      };
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while connecting to the AI engine.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -148,10 +197,10 @@ export default function ChatPage() {
                     <div className="space-y-8">
                       <AnswerPanel 
                         answer={msg.answer} 
-                        responseTime={msg.responseTime} 
+                        responseTime={msg.responseTime || 0} 
                         sourceCount={msg.sources.length}
+                        isStreaming={msg.isStreaming}
                         onFeedback={(type) => {
-                            // Update feedback for this message
                             setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, feedback: type } : m));
                         }}
                         currentFeedback={msg.feedback}

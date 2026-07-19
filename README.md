@@ -1,123 +1,141 @@
-# CrediTrust Financial | Enterprise RAG Intelligence
+<div align="center">
+  <div style="background-color: #f3f4f6; border-radius: 24px; padding: 10px; display: inline-block;">
+    <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-alert.svg" width="60" height="60" alt="CrediTrust Logo"/>
+  </div>
 
-![CrediTrust Dashboard](https://img.shields.io/badge/Status-Production_Ready-success)
-![Next.js](https://img.shields.io/badge/Next.js-15.3-black?logo=next.js)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688?logo=fastapi)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-FF6C37)
-![HuggingFace](https://img.shields.io/badge/HuggingFace-Flan_T5-F58025?logo=huggingface)
+  <h1 style="margin-bottom: 0;">CrediTrust Intelligence</h1>
+  <p style="font-size: 1.2rem; font-weight: 500; color: #4b5563;">Enterprise RAG Platform for Financial Complaint Analysis</p>
 
-An enterprise-grade, localized Retrieval-Augmented Generation (RAG) platform designed to ingest, process, and analyze massive volumes of consumer financial complaints. Built to help Product Managers instantly extract actionable intelligence from unstructured data without hallucination.
+  <p>
+    <a href="#features"><img src="https://img.shields.io/badge/Features-Data_Driven-blue?style=for-the-badge&color=2563eb" alt="Features"/></a>
+    <a href="#architecture"><img src="https://img.shields.io/badge/Architecture-Next.js%20%7C%20FastAPI-blue?style=for-the-badge&color=059669" alt="Architecture"/></a>
+    <a href="#deployment"><img src="https://img.shields.io/badge/Deployment-Docker%20Compose-blue?style=for-the-badge&color=d97706" alt="Deployment"/></a>
+  </p>
+</div>
 
-## 🌟 The Problem
-CrediTrust receives thousands of unstructured complaints monthly across multiple products (Credit Cards, Mortgages, etc.). Product teams spend hours manually reading these to identify emerging friction points.
+<br />
 
-## 💡 The Solution
-This platform uses **ChromaDB** and a localized **Flan-T5-Base** LLM to index all historical complaints. Stakeholders can ask natural language questions (e.g., *"What are the main issues with money transfers in Florida?"*) and receive grounded, fact-checked analysis instantly with verified source citations.
+**CrediTrust** is an enterprise-grade Retrieval-Augmented Generation (RAG) platform engineered to process and analyze massive volumes of consumer financial complaints. Built on a hardened microservices architecture, it seamlessly bridges the gap between static CSV datasets and live, actionable intelligence.
+
+Designed specifically to analyze a 500k+ row dataset from the CFPB (Consumer Financial Protection Bureau), CrediTrust empowers financial analysts with real-time semantic search, automated compliance scoring, and cross-product trend tracking—all wrapped in a highly-polished, glassmorphic UI.
 
 ---
 
-## 🏗️ System Architecture
+## ⚡ Features Matrix
+
+| Category | Feature | Description |
+| :--- | :--- | :--- |
+| **Generative AI** | Streaming RAG Pipeline | Live WebSocket streaming answers powered by Flan-T5, fully grounded in retrieved complaint narratives without hallucinations. |
+| **Analytics Engine** | Real-time `StatsEngine` | Parses 500,000+ records to compute dynamic KPIs, issue distributions, and month-over-month trend analysis. |
+| **User Experience** | Glassmorphic Interface | A premium, responsive Next.js frontend featuring subtle micro-animations, skeleton loaders, and contextual alerts. |
+| **Security** | JWT Authentication | Complete login and registration workflow with secure password hashing and stateless JWT bearer tokens. |
+| **Architecture** | Dockerized Microservices | Clean separation of concerns with a decoupled React frontend, FastAPI backend, and PostgreSQL database. |
+
+---
+
+## 🏗 System Architecture
+
+CrediTrust utilizes a decoupled frontend and backend, orchestrated entirely via Docker.
 
 ```mermaid
 graph TD
-    %% Define Styles
-    classDef client fill:#000,stroke:#4F46E5,stroke-width:2px,color:#fff
-    classDef api fill:#0f172a,stroke:#10B981,stroke-width:2px,color:#fff
-    classDef model fill:#1e1e1e,stroke:#F59E0B,stroke-width:2px,color:#fff
-    classDef db fill:#1e1e1e,stroke:#EC4899,stroke-width:2px,color:#fff
-    classDef data fill:#2d3748,stroke:#9CA3AF,stroke-width:2px,color:#fff
-    classDef ui fill:#4F46E5,stroke:#4F46E5,color:#fff
-
-    %% Components
-    subgraph Frontend [Next.js 15 Client Layer]
-        UI[React / Tailwind UI]:::ui
-        State[Local Storage & Hooks]:::client
-    end
-
-    subgraph Backend [FastAPI Application Layer]
-        API[REST API / Endpoints]:::api
-        Pipeline[RAG Pipeline Controller]:::api
-    end
-
-    subgraph Intelligence [Local AI Engine]
-        Embed[all-MiniLM-L6-v2 Embedder]:::model
-        LLM[google/flan-t5-base LLM]:::model
-    end
-
-    subgraph Persistence [Data Layer]
-        Chroma[(ChromaDB Vector Store)]:::db
-        CSV[(Raw Complaint CSV)]:::data
-    end
-
-    %% Flow
-    User((Stakeholder)) -->|Questions| UI
-    UI <-->|JSON over HTTP| API
-    API --> Pipeline
+    Client[("🌐 Client Browser")] -->|HTTP / WS| NGINX["🛡 NGINX Reverse Proxy"]
     
-    %% Setup Flow
-    CSV -.->|Chunk & Embed| Embed
-    Embed -.->|Store Vectors| Chroma
+    subgraph "Docker Compose Production Stack"
+    NGINX -->|Port 3000| UI["⚛️ Next.js (Frontend)"]
+    NGINX -->|Port 8000| API["⚡ FastAPI (Backend)"]
     
-    %% Retrieval Flow
-    Pipeline -->|1. Query| Embed
-    Embed -->|2. Search| Chroma
-    Chroma -->|3. Top-K Context| Pipeline
-    Pipeline -->|4. Prompt + Context| LLM
-    LLM -->|5. Grounded Answer| Pipeline
+    API <-->|SQLAlchemy| DB[("🐘 PostgreSQL")]
+    API <-->|Semantic Search| FAISS[("🔍 FAISS Vector Store")]
+    API <-->|Data Aggregation| CSV[("📄 500k row CSV")]
+    
+    subgraph "RAG Pipeline"
+    API --> LLM["🤖 Flan-T5 Local Model"]
+    API --> Embed["🧠 HuggingFace Embeddings"]
+    end
+    end
 ```
 
----
-
-## ✨ Key Features
-
-- **Grounded AI Investigator**: 14-page enterprise frontend for dynamic, continuous chat threads with interactive feedback and source tracing.
-- **Streaming Generation**: Character-by-character real-time output rendering for premium UX.
-- **Data Exploration**: Powerful table and chart interfaces to browse the dataset with sorting, filtering, and cross-product macro analysis.
-- **Compliance Tracking**: Executive SLA breach tracking and regulatory health matrices.
-- **Reporting & Export**: Dynamic CSV / PDF generation of intelligence data for external stakeholders.
-- **Hardware Orchestration**: Interactive settings to adjust LLM Temperature and Top-K retrieval vectors on the fly.
-- **100% Local Intelligence**: Entirely private pipeline running on-device. No data sent to OpenAI or Anthropic.
+### Technology Stack
+* **Frontend:** Next.js (React), Tailwind CSS, Lucide Icons, Shadcn UI
+* **Backend:** FastAPI, Python, SQLAlchemy, Uvicorn
+* **AI & Data:** HuggingFace Transformers, LangChain, FAISS, Pandas
+* **DevOps:** Docker, Docker Compose, NGINX, GitHub Actions
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start Guide
+
+You can easily run this platform on your local machine using Docker Compose.
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 18+
+* [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+* Ensure you have at least 8GB of RAM available (the LLM loads locally into memory).
 
-### 1. Backend Setup (FastAPI + ChromaDB)
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+### Running Locally (Development Mode)
 
-# 2. Build the Vector Store (takes ~5 minutes initially)
-python src/build_index.py
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/rag-complaint-chatbot.git
+   cd rag-complaint-chatbot
+   ```
 
-# 3. Start the API server
-python src/api.py
-```
-*API will run at http://localhost:8000*
+2. **Start the stack:**
+   ```bash
+   docker compose up --build
+   ```
 
-### 2. Frontend Setup (Next.js 15 + Tailwind v4)
-```bash
-# 1. Navigate to the UI directory
-cd ui
+3. **Access the Application:**
+   * **Frontend UI:** `http://localhost:3000`
+   * **Backend API Docs:** `http://localhost:8000/docs`
 
-# 2. Install Node dependencies
-npm install
-
-# 3. Start the development server
-npm run dev
-```
-*Platform will be accessible at http://localhost:3000 (or 3001)*
+4. **Default Credentials:**
+   * **Email:** `admin@creditrust.com`
+   * **Password:** `admin123`
 
 ---
 
-## 🧪 Evaluation Methodology
+## 🌍 Production Deployment
 
-We rigorously tested this pipeline against a standard 10-question evaluation framework (see `/evaluation` in the platform). 
-The model scores an average of **4.8/5.0** for factuality and grounding, with a **0% hallucination rate** due to strict prompt bounding.
+The repository includes a production-ready configuration that uses NGINX to route traffic on port 80, eliminating development ports (3000/8000) from external access.
+
+1. Configure your domain (or use IP) in `docker-compose.prod.yml` under `NEXT_PUBLIC_API_URL`.
+2. Generate a secure `JWT_SECRET_KEY` and update the environment variable in `docker-compose.prod.yml`.
+3. Launch the production stack in detached mode:
+   ```bash
+   docker compose -f docker-compose.prod.yml up --build -d
+   ```
 
 ---
-*Developed as a demonstration of enterprise RAG engineering, responsive web application architecture, and localized AI orchestration.*
+
+## 📸 Screenshots
+
+*(Replace these placeholders with real screenshots before portfolio submission)*
+
+<div align="center">
+  <img src="https://via.placeholder.com/800x450/111827/FFFFFF?text=Dashboard+Overview" alt="Dashboard" width="49%" />
+  <img src="https://via.placeholder.com/800x450/111827/FFFFFF?text=AI+Investigator+(RAG)" alt="AI Investigator" width="49%" />
+  <br/>
+  <img src="https://via.placeholder.com/800x450/111827/FFFFFF?text=Cross-Product+Comparison" alt="Comparison Analytics" width="49%" />
+  <img src="https://via.placeholder.com/800x450/111827/FFFFFF?text=Regulatory+Compliance" alt="Compliance Module" width="49%" />
+</div>
+
+---
+
+## 🧪 Testing Methodology
+
+CrediTrust features a built-in RAG Evaluation framework accessible at `/evaluation`. The pipeline was systematically tested against 10 multi-category financial inquiries, scoring an average of **4.8/5.0** across Accuracy, Grounding, and Completeness matrices.
+
+---
+
+## 👨‍💻 Developer
+
+Developed as an advanced technical demonstration of scalable architecture, Retrieval-Augmented Generation, and polished UI engineering.
+
+* **Portfolio / GitHub:** [Your GitHub Profile](https://github.com/)
+* **LinkedIn:** [Your LinkedIn Profile](https://linkedin.com/)
+
+---
+<div align="center">
+  <sub>Built with ❤️ and robust architecture.</sub>
+</div>

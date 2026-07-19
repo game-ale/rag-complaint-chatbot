@@ -133,6 +133,48 @@ Answer:"""
         }
         return result
 
+    def answer_question_stream(self, question, filters=None):
+        from transformers import TextIteratorStreamer
+        from threading import Thread
+        
+        # 1. Retrieve
+        print(f"Retrieving for stream: {question}...")
+        docs = self.retrieve_context(question, filters)
+        
+        # 2. Format Context
+        context = self.format_context(docs)
+        
+        # 3. Generate Prompt
+        prompt = self.prompt.format(context=context, question=question)
+        
+        # 4. Streamer setup
+        streamer = TextIteratorStreamer(self.generate_text.tokenizer, skip_prompt=True, skip_special_tokens=True)
+        inputs = self.generate_text.tokenizer([prompt], return_tensors="pt")
+        
+        # Ensure model is on correct device if applicable
+        if hasattr(self.generate_text.model, 'device'):
+            inputs = {k: v.to(self.generate_text.model.device) for k, v in inputs.items()}
+            
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=200)
+        
+        thread = Thread(target=self.generate_text.model.generate, kwargs=generation_kwargs)
+        thread.start()
+        
+        sources = [
+            {
+                "text": doc['text'],
+                "product": doc['metadata']['product'],
+                "company": doc['metadata']['company'],
+                "complaint_id": doc['metadata']['complaint_id']
+            } for doc in docs
+        ]
+        
+        def token_generator():
+            for text in streamer:
+                yield text
+                
+        return token_generator(), sources
+
 # Simple CLI test
 if __name__ == "__main__":
     rag = RAGPipeline()

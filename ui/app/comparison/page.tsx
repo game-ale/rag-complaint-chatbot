@@ -3,46 +3,48 @@
 import { PageTransition } from "@/components/PageTransition"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
-import { ArrowRightLeft, CreditCard, Scale, ShieldAlert, Zap } from "lucide-react"
-import { useState } from "react"
-
-const MOCK_COMPARISON = {
-    creditCard: {
-        total: 12450,
-        topIssues: [
-            { name: "Billing dispute", percent: 45 },
-            { name: "Fraudulent charges", percent: 25 },
-            { name: "Late fees", percent: 15 },
-            { name: "Customer service", percent: 10 },
-            { name: "Other", percent: 5 }
-        ],
-        companies: ["CitiBank", "Capital One", "Chase"]
-    },
-    personalLoan: {
-        total: 8200,
-        topIssues: [
-            { name: "High interest rates", percent: 50 },
-            { name: "Payment processing", percent: 20 },
-            { name: "Predatory terms", percent: 15 },
-            { name: "Customer service", percent: 10 },
-            { name: "Other", percent: 5 }
-        ],
-        companies: ["SoFi", "Upstart", "LendingClub"]
-    }
-}
+import { compareProducts, getComplaintStats } from "@/lib/api"
+import { ArrowRightLeft, CreditCard, Scale, ShieldAlert, Zap, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function ComparisonPage() {
+    const [products, setProducts] = useState<string[]>([])
+    const [productA, setProductA] = useState("")
+    const [productB, setProductB] = useState("")
+    
     const [isComparing, setIsComparing] = useState(false)
+    const [comparisonData, setComparisonData] = useState<any>(null)
+    const [isLoading, setIsLoading] = useState(false)
 
-    const handleCompare = () => {
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const stats = await getComplaintStats()
+                if (stats.byProduct) {
+                    const prodNames = stats.byProduct.map((p: any) => p.name)
+                    setProducts(prodNames)
+                    if (prodNames.length > 0) setProductA(prodNames[0])
+                    if (prodNames.length > 1) setProductB(prodNames[1])
+                }
+            } catch (err) {
+                console.error("Failed to load products for comparison", err)
+            }
+        }
+        fetchProducts()
+    }, [])
+
+    const handleCompare = async () => {
+        if (!productA || !productB) return
+        setIsLoading(true)
         setIsComparing(true)
+        try {
+            const data = await compareProducts(productA, productB)
+            setComparisonData(data)
+        } catch (err) {
+            console.error("Failed to compare products", err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -57,17 +59,13 @@ export default function ComparisonPage() {
                     <div className="flex flex-col md:flex-row items-center gap-6 justify-center">
                         <div className="w-full md:w-64 space-y-2">
                             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Baseline Product</label>
-                            <Select defaultValue="credit_card">
-                                <SelectTrigger className="h-12 bg-secondary/50 border-border/50 rounded-xl text-base font-bold">
-                                    <SelectValue placeholder="Select Product A" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="credit_card">Credit Card</SelectItem>
-                                    <SelectItem value="personal_loan">Personal Loan</SelectItem>
-                                    <SelectItem value="mortgage">Mortgage</SelectItem>
-                                    <SelectItem value="bank_account">Bank Account</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select
+                                value={productA}
+                                onChange={(e) => setProductA(e.target.value)}
+                                className="w-full h-12 bg-secondary/50 border border-border/50 rounded-xl text-base font-bold px-4 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                {products.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
                         </div>
 
                         <div className="hidden md:flex h-12 w-12 rounded-full bg-secondary items-center justify-center text-muted-foreground shrink-0 mt-6">
@@ -76,26 +74,26 @@ export default function ComparisonPage() {
 
                         <div className="w-full md:w-64 space-y-2">
                             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Comparison Target</label>
-                            <Select defaultValue="personal_loan">
-                                <SelectTrigger className="h-12 bg-secondary/50 border-border/50 rounded-xl text-base font-bold">
-                                    <SelectValue placeholder="Select Product B" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="credit_card">Credit Card</SelectItem>
-                                    <SelectItem value="personal_loan">Personal Loan</SelectItem>
-                                    <SelectItem value="mortgage">Mortgage</SelectItem>
-                                    <SelectItem value="bank_account">Bank Account</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <select
+                                value={productB}
+                                onChange={(e) => setProductB(e.target.value)}
+                                className="w-full h-12 bg-secondary/50 border border-border/50 rounded-xl text-base font-bold px-4 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                {products.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
                         </div>
 
-                        <Button onClick={handleCompare} className="w-full md:w-auto h-12 px-8 rounded-xl font-bold shadow-lg shadow-primary/20 mt-6">
-                            <Zap className="h-4 w-4 mr-2" />
-                            Run Analysis
+                        <Button 
+                            onClick={handleCompare} 
+                            disabled={isLoading || !productA || !productB}
+                            className="w-full md:w-auto h-12 px-8 rounded-xl font-bold shadow-lg shadow-primary/20 mt-6"
+                        >
+                            {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
+                            {isLoading ? "Analyzing..." : "Run Analysis"}
                         </Button>
                     </div>
 
-                    {isComparing && (
+                    {isComparing && comparisonData && (
                         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {/* Product A */}
                             <div className="space-y-6">
@@ -105,8 +103,8 @@ export default function ComparisonPage() {
                                             <CreditCard className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black">Credit Card</h3>
-                                            <p className="text-sm text-muted-foreground font-medium">{MOCK_COMPARISON.creditCard.total.toLocaleString()} total narratives</p>
+                                            <h3 className="text-xl font-black">{productA}</h3>
+                                            <p className="text-sm text-muted-foreground font-medium">{comparisonData.productA.total.toLocaleString()} total complaints</p>
                                         </div>
                                     </div>
                                 </div>
@@ -116,24 +114,27 @@ export default function ComparisonPage() {
                                         <ShieldAlert className="h-4 w-4 text-destructive" />
                                         Primary Friction Points
                                     </h4>
-                                    {MOCK_COMPARISON.creditCard.topIssues.map((issue, idx) => (
-                                        <div key={idx} className="space-y-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-muted-foreground">
-                                                <span>{issue.name}</span>
-                                                <span>{issue.percent}%</span>
+                                    {comparisonData.productA.topIssues.map((issue: any, idx: number) => {
+                                        const percent = Math.round((issue.count / comparisonData.productA.total) * 100) || 0
+                                        return (
+                                            <div key={idx} className="space-y-1.5">
+                                                <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                                                    <span>{issue.issue}</span>
+                                                    <span>{percent}%</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                                    <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                                                </div>
                                             </div>
-                                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                                <div className="h-full bg-primary rounded-full" style={{ width: `${issue.percent}%` }} />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
 
                                 <div className="p-5 rounded-2xl bg-secondary/30 border border-border/50">
                                     <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Top Entities Mentioned</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {MOCK_COMPARISON.creditCard.companies.map((company, idx) => (
-                                            <span key={idx} className="px-3 py-1 rounded-lg bg-background border border-border/50 text-xs font-bold">{company}</span>
+                                        {comparisonData.productA.topCompanies.map((company: any, idx: number) => (
+                                            <span key={idx} className="px-3 py-1 rounded-lg bg-background border border-border/50 text-xs font-bold">{company.company}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -147,8 +148,8 @@ export default function ComparisonPage() {
                                             <Scale className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black">Personal Loan</h3>
-                                            <p className="text-sm text-muted-foreground font-medium">{MOCK_COMPARISON.personalLoan.total.toLocaleString()} total narratives</p>
+                                            <h3 className="text-xl font-black">{productB}</h3>
+                                            <p className="text-sm text-muted-foreground font-medium">{comparisonData.productB.total.toLocaleString()} total complaints</p>
                                         </div>
                                     </div>
                                 </div>
@@ -158,24 +159,27 @@ export default function ComparisonPage() {
                                         <ShieldAlert className="h-4 w-4 text-destructive" />
                                         Primary Friction Points
                                     </h4>
-                                    {MOCK_COMPARISON.personalLoan.topIssues.map((issue, idx) => (
-                                        <div key={idx} className="space-y-1.5">
-                                            <div className="flex justify-between text-xs font-bold text-muted-foreground">
-                                                <span>{issue.name}</span>
-                                                <span>{issue.percent}%</span>
+                                    {comparisonData.productB.topIssues.map((issue: any, idx: number) => {
+                                        const percent = Math.round((issue.count / comparisonData.productB.total) * 100) || 0
+                                        return (
+                                            <div key={idx} className="space-y-1.5">
+                                                <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                                                    <span>{issue.issue}</span>
+                                                    <span>{percent}%</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                                    <div className="h-full bg-amber-500 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                                                </div>
                                             </div>
-                                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${issue.percent}%` }} />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
 
                                 <div className="p-5 rounded-2xl bg-secondary/30 border border-border/50">
                                     <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Top Entities Mentioned</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {MOCK_COMPARISON.personalLoan.companies.map((company, idx) => (
-                                            <span key={idx} className="px-3 py-1 rounded-lg bg-background border border-border/50 text-xs font-bold">{company}</span>
+                                        {comparisonData.productB.topCompanies.map((company: any, idx: number) => (
+                                            <span key={idx} className="px-3 py-1 rounded-lg bg-background border border-border/50 text-xs font-bold">{company.company}</span>
                                         ))}
                                     </div>
                                 </div>

@@ -2,27 +2,28 @@
 
 import { PageTransition } from "@/components/PageTransition"
 import { Card } from "@/components/ui/card"
-import { getComplaintStats } from "@/lib/api"
+import { getComplaintStats, getHistory } from "@/lib/api"
 import { AnalyticsData } from "@/lib/types"
 import { Activity, Clock, FileText, Layers, Loader2, TrendingUp, Zap } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-
-const RECENT_ACTIVITY = [
-    { title: "Credit Card analysis", type: "Query", time: "2 hours ago" },
-    { title: "Loan complaint report", type: "Export", time: "5 hours ago" },
-    { title: "Fraud investigation", type: "Query", time: "Yesterday" }
-]
+import { useAuth } from "@/lib/authContext"
 
 export default function Dashboard() {
+    const { user } = useAuth()
     const [data, setData] = useState<AnalyticsData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [recentActivity, setRecentActivity] = useState<any[]>([])
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const stats = await getComplaintStats();
+                const [stats, history] = await Promise.all([
+                    getComplaintStats(),
+                    getHistory(5).catch(() => [])
+                ]);
                 setData(stats);
+                setRecentActivity(history);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats:", error);
             } finally {
@@ -43,7 +44,9 @@ export default function Dashboard() {
                         </span>
                         System Online
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-foreground">Welcome back, Asha 👋</h1>
+                    <h1 className="text-4xl font-black tracking-tight text-foreground">
+                        Welcome back, {user?.name.split(' ')[0] || 'Investigator'} 👋
+                    </h1>
                     <p className="text-muted-foreground text-lg">Here is the executive overview of today's intelligence data.</p>
                 </header>
 
@@ -59,7 +62,7 @@ export default function Dashboard() {
                         [
                             { label: "Total Complaints", value: data.narrativeStats.total.toLocaleString(), icon: FileText, trend: "Updated today" },
                             { label: "Tracked Products", value: data.byProduct.length.toString(), icon: Layers, trend: "All systems active" },
-                            { label: "Today's Queries", value: "24", icon: Activity, trend: "+12% vs yesterday" },
+                            { label: "Your Queries", value: recentActivity.length.toString(), icon: Activity, trend: "Session history" },
                             { label: "Avg Response", value: "2.1s", icon: Zap, trend: "Optimal speed" }
                         ].map((kpi, i) => (
                             <Card key={i} className="p-6 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 border-border/50 bg-card/30 backdrop-blur-sm">
@@ -107,29 +110,33 @@ export default function Dashboard() {
                         </div>
                         <Card className="p-6 border-border/50 bg-card/30 backdrop-blur-sm h-full max-h-[300px]">
                             <div className="space-y-6">
-                                {RECENT_ACTIVITY.map((activity, i) => (
-                                    <div key={i} className="flex gap-4 relative">
-                                        {i !== RECENT_ACTIVITY.length - 1 && (
-                                            <div className="absolute left-[15px] top-8 bottom-[-24px] w-px bg-border/50" />
-                                        )}
-                                        <div className="relative z-10 flex-shrink-0 mt-1">
-                                            <div className="h-8 w-8 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-muted-foreground">
-                                                {activity.type === "Query" ? <Zap className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+                                {recentActivity.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-4">No queries yet. Start chatting!</p>
+                                ) : (
+                                    recentActivity.map((activity: any, i: number) => (
+                                        <div key={i} className="flex gap-4 relative">
+                                            {i !== recentActivity.length - 1 && (
+                                                <div className="absolute left-[15px] top-8 bottom-[-24px] w-px bg-border/50" />
+                                            )}
+                                            <div className="relative z-10 flex-shrink-0 mt-1">
+                                                <div className="h-8 w-8 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-muted-foreground">
+                                                    <Zap className="h-3 w-3" />
+                                                </div>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-bold text-foreground truncate">{activity.question}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Query</span>
+                                                    <span className="text-muted-foreground text-[10px]">•</span>
+                                                    <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        {new Date(activity.created_at).toLocaleDateString()}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-foreground">{activity.title}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{activity.type}</span>
-                                                <span className="text-muted-foreground text-[10px]">•</span>
-                                                <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    {activity.time}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </Card>
                     </div>
