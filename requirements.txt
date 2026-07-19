@@ -4,9 +4,16 @@ matplotlib
 seaborn
 langchain
 langchain-community
-chromadb
+chromadb==1.5.9
 sentence-transformers
 gradio
 jupyter
 scikit-learn
 python-dotenv
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+bcrypt
+python-jose[cryptography]
+python-multipart

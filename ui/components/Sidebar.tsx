@@ -3,47 +3,73 @@
 import { cn } from "@/lib/utils"
 import {
     BarChart3,
-    History,
+    FileText,
+    FolderSearch,
+    HelpCircle,
     LayoutDashboard,
+    Menu,
+    MessageSquare,
+    Scale,
+    Search,
     Settings,
     ShieldCheck,
-    Zap
+    TrendingUp,
+    User,
+    X,
+    Zap,
+    Bell
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
+import { Button } from "./ui/button"
 
-const menuItems = [
+const menuGroups = [
     {
-        name: "Dashboard",
-        href: "/",
-        icon: LayoutDashboard,
-        description: "AI Intelligence Engine"
+        title: "MAIN",
+        items: [
+            { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "AI Chat", href: "/chat", icon: MessageSquare },
+            { name: "Analytics", href: "/analytics", icon: BarChart3 },
+        ]
     },
     {
-        name: "Analytics",
-        href: "/analytics",
-        icon: BarChart3,
-        description: "Market Friction Trends"
+        title: "EXPLORE",
+        items: [
+            { name: "Complaint Explorer", href: "/explorer", icon: FolderSearch },
+            { name: "Trends", href: "/trends", icon: TrendingUp },
+            { name: "Compliance", href: "/compliance", icon: Scale },
+        ]
     },
     {
-        name: "Case Archive",
-        href: "/history",
-        icon: History,
-        description: "Historical Analysis"
+        title: "TOOLS",
+        items: [
+            { name: "Reports", href: "/reports", icon: FileText },
+            { name: "Search", href: "/search", icon: Search },
+        ]
     },
     {
-        name: "System Core",
-        href: "/settings",
-        icon: Settings,
-        description: "Config & Logs"
+        title: "SYSTEM",
+        items: [
+            { name: "Profile", href: "/profile", icon: User },
+            { name: "Settings", href: "/settings", icon: Settings },
+            { name: "Help", href: "/help", icon: HelpCircle },
+        ]
     }
 ]
 
+import { useAuth } from "@/lib/authContext"
+
 export function Sidebar() {
     const pathname = usePathname()
+    const { user, logout } = useAuth()
+    const [isOpen, setIsOpen] = useState(false)
 
-    return (
-        <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/50 bg-card/30 backdrop-blur-xl hidden lg:flex flex-col z-50">
+    // Don't show sidebar on login page
+    if (pathname === '/login' || pathname === '/') return null;
+
+    const SidebarContent = () => (
+        <>
             <div className="p-6">
                 <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
@@ -56,54 +82,96 @@ export function Sidebar() {
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 space-y-2 py-4">
-                {menuItems.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                                "group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative",
-                                isActive
-                                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                                    : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <item.icon className={cn(
-                                "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                                isActive ? "text-primary-foreground" : "text-muted-foreground"
-                            )} />
-                            <div className="flex flex-col">
-                                <span className="text-sm font-bold">{item.name}</span>
-                                {!isActive && (
-                                    <span className="text-[10px] opacity-0 group-hover:opacity-60 transition-opacity font-medium">
-                                        {item.description}
-                                    </span>
-                                )}
-                            </div>
-                            {isActive && (
-                                <div className="absolute left-0 w-1 h-6 bg-white rounded-full -ml-1" />
-                            )}
-                        </Link>
-                    )
-                })}
+            <nav className="flex-1 px-4 space-y-6 py-4 overflow-y-auto no-scrollbar pb-24 lg:pb-4">
+                {menuGroups.map((group, idx) => (
+                    <div key={idx} className="space-y-1">
+                        <div className="px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                            {group.title}
+                        </div>
+                        {group.items.map((item) => {
+                            const isActive = pathname === item.href || (pathname === '/' && item.href === '/dashboard')
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className={cn(
+                                        "group flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 relative",
+                                        isActive
+                                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                            : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    <item.icon className={cn(
+                                        "h-4 w-4 transition-transform duration-300 group-hover:scale-110",
+                                        isActive ? "text-primary-foreground" : "text-muted-foreground"
+                                    )} />
+                                    <span className="text-sm font-bold">{item.name}</span>
+                                    {isActive && (
+                                        <div className="absolute left-0 w-1 h-5 bg-white rounded-full -ml-1" />
+                                    )}
+                                </Link>
+                            )
+                        })}
+                    </div>
+                ))}
             </nav>
 
-            <div className="p-6 mt-auto">
-                <div className="p-4 rounded-2xl bg-secondary/50 border border-border/50 space-y-3">
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-bold uppercase tracking-widest">Enterprise Mode</span>
+            <div className="p-4 mt-auto border-t border-border/50 bg-card/50">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center font-bold text-sm text-foreground uppercase">
+                            {user?.name?.[0] || "U"}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold leading-none">{user?.name || "User"}</span>
+                            <span className="text-[10px] font-medium text-muted-foreground mt-1 capitalize">{user?.role || "User"}</span>
+                        </div>
                     </div>
-                    <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
-                        <div className="h-full w-2/3 bg-primary rounded-full" />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground font-medium">
-                        System performance: Optimal
-                    </p>
+                    <Button variant="ghost" size="icon" onClick={logout} title="Logout" className="relative text-muted-foreground hover:text-foreground hover:bg-secondary">
+                        <User className="h-5 w-5 text-destructive" />
+                    </Button>
                 </div>
             </div>
-        </aside>
+        </>
+    )
+
+    return (
+        <>
+            {/* Mobile Header */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border/50 z-50 flex items-center justify-between px-4">
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
+                        <Zap className="h-4 w-4 fill-current" />
+                    </div>
+                    <span className="font-bold tracking-tight">CrediTrust</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="relative text-muted-foreground">
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive border-2 border-background"></span>
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+                        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Mobile Backdrop */}
+            {isOpen && (
+                <div 
+                    className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside className={cn(
+                "fixed left-0 top-0 h-screen w-64 border-r border-border/50 bg-card/95 backdrop-blur-xl flex-col z-50 transition-transform duration-300 lg:translate-x-0 flex",
+                isOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                <SidebarContent />
+            </aside>
+        </>
     )
 }

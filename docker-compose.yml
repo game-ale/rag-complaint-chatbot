@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: creditrust
+      POSTGRES_PASSWORD: supersecret
+      POSTGRES_DB: creditrust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U creditrust"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=postgresql://creditrust:supersecret@db:5432/creditrust
+      - JWT_SECRET_KEY=my_super_secret_key_change_in_production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./vector_store:/app/vector_store
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile.frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

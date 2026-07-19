@@ -2,7 +2,10 @@
 
 import { PageTransition } from "@/components/PageTransition"
 import { Card } from "@/components/ui/card"
-import { AlertTriangle, FileText, TrendingUp, Users } from "lucide-react"
+import { getComplaintStats } from "@/lib/api"
+import { AnalyticsData } from "@/lib/types"
+import { AlertTriangle, FileText, Loader2, TrendingUp, Users } from "lucide-react"
+import { useEffect, useState } from "react"
 import {
     Area,
     AreaChart,
@@ -17,35 +20,36 @@ import {
     XAxis,
     YAxis
 } from "recharts"
-
-const categoryData = [
-    { name: "Credit card", value: 4500 },
-    { name: "Debt collection", value: 3200 },
-    { name: "Mortgages", value: 2800 },
-    { name: "Bank account", value: 2100 },
-    { name: "Credit reporting", value: 1800 }
-]
-
-const trendData = [
-    { week: "W1", complaints: 400, resolved: 320 },
-    { week: "W2", complaints: 600, resolved: 480 },
-    { week: "W3", complaints: 550, resolved: 510 },
-    { week: "W4", complaints: 800, resolved: 650 },
-    { week: "W5", complaints: 950, resolved: 890 },
-    { week: "W6", complaints: 1100, resolved: 980 }
-]
-
-const issueData = [
-    { issue: "Billing", count: 1200 },
-    { issue: "Privacy", count: 900 },
-    { issue: "Customer Service", count: 850 },
-    { issue: "Interest", count: 600 },
-    { issue: "Fees", count: 400 }
-]
+import { cn } from "@/lib/utils"
 
 const COLORS = ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"]
 
 export default function Analytics() {
+    const [data, setData] = useState<AnalyticsData | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const stats = await getComplaintStats();
+                setData(stats);
+            } catch (error) {
+                console.error("Failed to fetch analytics stats:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStats();
+    }, [])
+
+    if (isLoading || !data) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
     return (
         <PageTransition>
             <div className="p-8 lg:p-12 space-y-12">
@@ -57,7 +61,7 @@ export default function Analytics() {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: "Total Narratives", value: "15,482", icon: FileText, trend: "+12%" },
+                        { label: "Total Narratives", value: data.narrativeStats.total.toLocaleString(), icon: FileText, trend: "+12%" },
                         { label: "Critical Friction", value: "842", icon: AlertTriangle, trend: "-5%" },
                         { label: "Affected Users", value: "125k", icon: Users, trend: "+3%" },
                         { label: "Resolution Alpha", value: "0.92", icon: TrendingUp, trend: "Stable" }
@@ -89,7 +93,7 @@ export default function Analytics() {
                         <div className="mb-8 flex justify-between items-end">
                             <div>
                                 <h3 className="text-xl font-bold tracking-tight">Complaint Intensity Trend</h3>
-                                <p className="text-sm text-muted-foreground">Volume vs Resolved delta over 6 weeks</p>
+                                <p className="text-sm text-muted-foreground">Volume vs Resolved delta over 6 months</p>
                             </div>
                             <div className="flex gap-4">
                                 <div className="flex items-center gap-2">
@@ -104,7 +108,7 @@ export default function Analytics() {
                         </div>
                         <div className="h-[350px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={trendData}>
+                                <AreaChart data={data.byMonth}>
                                     <defs>
                                         <linearGradient id="colorComp" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3} />
@@ -116,7 +120,7 @@ export default function Analytics() {
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888820" />
-                                    <XAxis dataKey="week" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: "#000000", border: "none", color: "#fff", borderRadius: "12px", fontSize: "12px" }}
@@ -137,7 +141,7 @@ export default function Analytics() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={categoryData}
+                                        data={data.byProduct}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={60}
@@ -145,7 +149,7 @@ export default function Analytics() {
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {categoryData.map((entry, index) => (
+                                        {data.byProduct.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
@@ -154,13 +158,13 @@ export default function Analytics() {
                             </ResponsiveContainer>
                         </div>
                         <div className="space-y-3 mt-6">
-                            {categoryData.slice(0, 3).map((item, i) => (
+                            {data.byProduct.slice(0, 3).map((item, i) => (
                                 <div key={i} className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[i] }} />
                                         <span className="text-[11px] font-bold text-foreground">{item.name}</span>
                                     </div>
-                                    <span className="text-[11px] font-medium text-muted-foreground">{((item.value / 14400) * 100).toFixed(0)}%</span>
+                                    <span className="text-[11px] font-medium text-muted-foreground">{((item.value / data.byProduct.reduce((a,b)=>a+b.value, 0)) * 100).toFixed(0)}%</span>
                                 </div>
                             ))}
                         </div>
@@ -171,7 +175,7 @@ export default function Analytics() {
                         <h3 className="text-xl font-bold tracking-tight mb-6">Common Grievance Vectors</h3>
                         <div className="h-[200px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={issueData}>
+                                <BarChart data={data.topIssues}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888820" />
                                     <XAxis dataKey="issue" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
                                     <YAxis hide />
@@ -185,8 +189,4 @@ export default function Analytics() {
             </div>
         </PageTransition>
     )
-}
-
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(' ');
 }

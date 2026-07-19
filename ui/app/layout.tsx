@@ -1,16 +1,18 @@
-import { Sidebar } from "@/components/Sidebar";
+import { ClientLayout } from "@/components/ClientLayout";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Roboto_Mono } from "next/font/google";
+import { AuthProvider } from "@/lib/authContext";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const robotoMono = Roboto_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -27,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary/20 bg-background transition-colors duration-300`}
+        className={`${inter.variable} ${robotoMono.variable} antialiased selection:bg-primary/20 bg-background transition-colors duration-300`}
       >
         <ThemeProvider
           attribute="class"
@@ -35,12 +37,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex">
-            <Sidebar />
-            <div className="flex-1 lg:pl-64 min-h-screen relative">
+          <AuthProvider>
+            <ClientLayout>
               {children}
-            </div>
-          </div>
+            </ClientLayout>
+          </AuthProvider>
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
     </html>

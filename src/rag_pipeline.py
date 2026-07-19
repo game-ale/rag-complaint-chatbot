@@ -13,7 +13,8 @@ TOP_K = 5
 MAX_CONTEXT_LENGTH = 1000 # Character limit for context to avoid token limits
 
 class RAGPipeline:
-    def __init__(self):
+    def __init__(self, initial_model="google/flan-t5-base"):
+        self.active_model = initial_model
         print("Initializing RAG Pipeline...")
         # 1. Load Vector Store
         self.chroma_client = chromadb.PersistentClient(path=VECTOR_STORE_DIR)
@@ -24,15 +25,7 @@ class RAGPipeline:
         self.embedder = SentenceTransformer(EMBEDDING_MODEL_NAME)
         
         # 3. Load LLM
-        print(f"Loading LLM: {LLM_MODEL_NAME}...")
-        self.generate_text = pipeline(
-            model=LLM_MODEL_NAME, 
-            task="text2text-generation", 
-            max_new_tokens=200,
-            temperature=0.1,
-            do_sample=True
-        )
-        self.llm = HuggingFacePipeline(pipeline=self.generate_text)
+        self._load_llm(self.active_model)
         
         # 4. Define Prompt
         template = """You are a financial analyst Assistant for CrediTrust. Use the following context to answer the question. 
@@ -47,6 +40,22 @@ Answer:"""
         self.prompt = PromptTemplate(template=template, input_variables=["context", "question"])
         self.chain = self.prompt | self.llm
         print("Pipeline Initialized.")
+
+    def _load_llm(self, model_name):
+        print(f"Loading LLM: {model_name}...")
+        self.generate_text = pipeline(
+            model=model_name, 
+            task="text-generation", 
+            max_new_tokens=200,
+        )
+        self.llm = HuggingFacePipeline(pipeline=self.generate_text)
+
+    def switch_model(self, new_model_name):
+        print(f"Switching model from {self.active_model} to {new_model_name}")
+        self._load_llm(new_model_name)
+        self.active_model = new_model_name
+        self.chain = self.prompt | self.llm
+        return self.active_model
 
     def retrieve_context(self, question, filters=None, k=TOP_K):
         # Embed query
