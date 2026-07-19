@@ -5,7 +5,6 @@ import { ChatInput } from '@/components/ChatInput';
 import { PageTransition } from '@/components/PageTransition';
 import { AnswerSkeleton } from '@/components/SkeletonLoader';
 import { SourceList } from '@/components/SourceList';
-import { askQuestion } from '@/lib/api';
 import { ChatMessage } from '@/lib/types';
 import { ArrowRight, ShieldCheck, Sparkles, Target } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -74,9 +73,13 @@ export default function ChatPage() {
       
       ws.onopen = () => {
         setIsLoading(false); // Stop main loading spinner, start streaming
+        const topK = parseInt(localStorage.getItem('rag_top_k') || '3')
+        const persona = localStorage.getItem('rag_persona') || 'analyst'
         ws.send(JSON.stringify({
           token: token,
           question: question,
+          top_k: topK,
+          persona: persona,
           filters: product ? { product } : undefined
         }));
       };
@@ -182,11 +185,11 @@ export default function ChatPage() {
                 {messages.map((msg, idx) => (
                   <div key={msg.id} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* User Question */}
-                    <div className="flex justify-end">
-                      <div className="bg-primary text-primary-foreground px-6 py-4 rounded-2xl rounded-tr-sm max-w-[85%] shadow-md">
-                        <p className="font-medium text-[15px]">{msg.question}</p>
+                    <div className="flex justify-end px-4 sm:px-0">
+                      <div className="bg-secondary/70 text-foreground px-5 py-3 rounded-3xl max-w-[85%]">
+                        <p className="text-[15px]">{msg.question}</p>
                         {msg.product && (
-                          <div className="mt-2 text-[10px] uppercase tracking-widest font-bold opacity-70">
+                          <div className="mt-2 text-[10px] uppercase tracking-widest font-bold opacity-50">
                             Filtered: {msg.product}
                           </div>
                         )}

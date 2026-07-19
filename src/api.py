@@ -241,10 +241,10 @@ async def websocket_ask(websocket: WebSocket, db: Session = Depends(get_db)):
         filters = request_data.get("filters", None)
         
         start_time = datetime.now()
-        token_generator, sources = rag_pipeline.answer_question_stream(question, filters=filters)
+        token_gen, sources = rag_pipeline.answer_question_stream(question, filters=filters)
         
         full_answer = ""
-        for text in token_generator():
+        for text in token_gen:
             full_answer += text
             await websocket.send_json({"type": "token", "content": text})
             await asyncio.sleep(0.01) # Small delay to yield loop

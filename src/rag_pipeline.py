@@ -1,6 +1,6 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 from langchain_community.llms import HuggingFacePipeline
 from langchain_core.prompts import PromptTemplate
 import json
@@ -43,9 +43,12 @@ Answer:"""
 
     def _load_llm(self, model_name):
         print(f"Loading LLM: {model_name}...")
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
         self.generate_text = pipeline(
-            model=model_name, 
-            task="text-generation", 
+            task="text-generation",
+            model=model,
+            tokenizer=tokenizer,
             max_new_tokens=200,
         )
         self.llm = HuggingFacePipeline(pipeline=self.generate_text)

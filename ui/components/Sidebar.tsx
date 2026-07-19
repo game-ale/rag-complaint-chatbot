@@ -9,10 +9,12 @@ import {
     LayoutDashboard,
     Menu,
     MessageSquare,
+    Moon,
     Scale,
     Search,
     Settings,
     ShieldCheck,
+    Sun,
     TrendingUp,
     User,
     X,
@@ -22,6 +24,7 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { useTheme } from "next-themes"
 import { Button } from "./ui/button"
 
 const menuGroups = [
@@ -64,6 +67,7 @@ export function Sidebar() {
     const pathname = usePathname()
     const { user, logout } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
+    const { theme, setTheme } = useTheme()
 
     // Don't show sidebar on login page
     if (pathname === '/login' || pathname === '/') return null;
@@ -117,7 +121,24 @@ export function Sidebar() {
                 ))}
             </nav>
 
-            <div className="p-4 mt-auto border-t border-border/50 bg-card/50">
+            <div className="p-4 mt-auto border-t border-border/50 bg-card/50 space-y-3">
+                <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Theme</span>
+                    <button
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="h-8 w-14 rounded-full bg-secondary border border-border/50 relative transition-all duration-500 hover:border-primary/30"
+                        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                    >
+                        <div className={cn(
+                            "absolute top-0.5 h-7 w-7 rounded-full flex items-center justify-center transition-all duration-500 shadow-sm",
+                            theme === 'dark'
+                                ? "left-[calc(100%-30px)] bg-primary text-primary-foreground"
+                                : "left-0.5 bg-white text-yellow-500 border border-border/50"
+                        )}>
+                            {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+                        </div>
+                    </button>
+                </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center font-bold text-sm text-foreground uppercase">

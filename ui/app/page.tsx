@@ -7,8 +7,8 @@ export default function Root() {
     const router = useRouter()
 
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn")
-        if (isLoggedIn === "true") {
+        const token = localStorage.getItem("token")
+        if (token) {
             router.push("/dashboard")
         } else {
             router.push("/login")
